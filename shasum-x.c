@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <errno.h>
+
 
 #define HASH_SIZE 32
 #define HASH_DISPLAY 16
@@ -14,7 +16,7 @@ void *sha256sum(const void* filename){
 
 	//the char buffer that is returned to the main thread
 	char *outbuffer = (char*)calloc(HASH_SIZE,HASH_DISPLAY);
-	int file = open(filename,O_RDONLY);
+	int file = open(filename,O_RDWR);//sets RDWR so it detects if its a folder
 	
 	//used as part of the string parsing
 	char *itr; int i;
@@ -30,10 +32,21 @@ void *sha256sum(const void* filename){
             sprintf(itr,"%02x",buffer[i]);
 			itr+=2;
 		}
+		close(file);
 	}
 	else {
-		//file not found
-		sprintf(outbuffer,"-");
+		int err = errno;
+		switch (err) {
+			case EISDIR:
+				sprintf(outbuffer,"Is a directory");
+			break;
+			case ENOENT:
+				sprintf(outbuffer,"No such file");
+			break;
+			default:
+				sprintf(outbuffer,"Error (%i)",err);
+			break;
+		}
 	}
 	pthread_exit((void *)outbuffer);
 }
