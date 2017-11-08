@@ -16,6 +16,10 @@ void *sha256sum(const void* filename){
 
 	//the char buffer that is returned to the main thread
 	char *outbuffer = (char*)calloc(HASH_SIZE,HASH_DISPLAY);
+	/*TODO: change this back to O_RONLY when we chech for folder first
+	* currenly open files are not read, witch does not corensponde with fucttionality
+	* from sha256sum. 
+	*/
 	int file = open(filename,O_RDWR);//sets RDWR so it detects if its a folder
 	
 	//used as part of the string parsing
@@ -69,8 +73,8 @@ int main(int argc, char* argv[] )
 			continue;
 		}
 		printf("%s  %s\n",(char *)ret,argv[i]);
-		//TODO: check if i might leak memeory
-		free(ret);
+		//TODO: check if i might leak memeory leak
+		free((char *)ret);
 	}
   	return 0;
 }
